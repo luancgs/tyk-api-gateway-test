@@ -1,0 +1,62 @@
+version: '3.9'
+name: tyk-api-gateway
+
+services:
+  endpoint_1:
+    container_name: endpoint1
+    build: ./endpoint/
+    ports:
+      - 5001:3001
+    environment:
+      - ENDPOINT_VERSION=1
+      - PORT_NUMBER=3001
+    networks:
+      - tyk
+
+  endpoint_2:
+    container_name: endpoint2
+    build: ./endpoint/
+    ports:
+      - 5002:3002
+    environment:
+      - ENDPOINT_VERSION=2
+      - PORT_NUMBER=3002
+    networks:
+      - tyk
+      
+  endpoint_3:
+    container_name: endpoint3
+    build: ./endpoint/
+    ports:
+      - 5003:3003
+    environment:
+      - ENDPOINT_VERSION=3
+      - PORT_NUMBER=3003
+    networks:
+      - tyk
+
+  tyk-redis:
+    container_name: tyk-redis
+    image: redis:7.0.2-alpine
+    ports:
+      - 127.0.0.1:6379:6379
+    networks:
+      - tyk
+
+  tyk-gateway:
+    container_name: tyk-gateway
+    image: docker.tyk.io/tyk-gateway/tyk-gateway:latest
+    ports:
+      - 8080:8080
+    environment:
+      - TYK_GW_SECRET=352d20ee67be67f6340b4c0605b044b7
+    volumes:
+      - ./tyk/tyk.conf:/opt/tyk-gateway/tyk.conf
+      - ./apps:/opt/tyk-gateway/apps
+    networks:
+      - tyk
+    depends_on:
+      - tyk-redis
+
+networks:
+  tyk:
